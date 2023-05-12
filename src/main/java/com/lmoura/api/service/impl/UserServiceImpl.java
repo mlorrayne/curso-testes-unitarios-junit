@@ -4,7 +4,7 @@ import com.lmoura.api.domain.User;
 import com.lmoura.api.domain.dto.UserDTO;
 import com.lmoura.api.repositories.UserRepository;
 import com.lmoura.api.service.UserService;
-import com.lmoura.api.service.exceptions.DataIntegretyViolationException;
+import com.lmoura.api.service.exceptions.DataIntegrityViolationException;
 import com.lmoura.api.service.exceptions.ObjectNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +38,18 @@ public class UserServiceImpl implements UserService {
         return repository.save(mapper.map(obj, User.class));
     }
 
+    @Override
+    public User update(UserDTO obj) {
+        findByEmail(obj);
+        return repository.save(mapper.map(obj, User.class));
+    }
+
     private void findByEmail(UserDTO obj){
         Optional<User> user = repository.findByEmail(obj.getEmail());
-        if (user.isPresent()){
-            throw new DataIntegretyViolationException("E-mail já cadastrado.");
+        if (user.isPresent() && !user.get().getId().equals(obj.getId())){
+            throw new DataIntegrityViolationException("E-mail já cadastrado.");
         }
     }
+
+
 }
